@@ -131,8 +131,19 @@ public class CS232LinkedBinaryTree<K, V> implements CS232BinaryTree<K, V> {
 	 */
 	public CS232LinkedBinaryTree(CS232LinkedBinaryTree<K, V> leftSubTree,
 			K key, V value, CS232LinkedBinaryTree<K, V> rightSubTree) {
-		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		root = new BTNode<>(key,value);
+		size = 1;
+		
+		if(leftSubTree != null && leftSubTree.root !=null) {
+			root.left = leftSubTree.root;
+			leftSubTree.root.parent = root;
+			size += leftSubTree.size; //add sub tree size to update new tree size.
+		}
+		if(rightSubTree != null && rightSubTree.root !=null) {
+			root.right = rightSubTree.root;
+			rightSubTree.root.parent = root; 
+			size += rightSubTree.size; //add sub tree size to update new tree size.
+		}
 	}
 
 	/**
@@ -146,9 +157,31 @@ public class CS232LinkedBinaryTree<K, V> implements CS232BinaryTree<K, V> {
 	 * {@inheritDoc}
 	 */
 	public boolean contains(K key) {
-		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		return subtreeContains(root,key);
 	}
+	
+	public boolean subtreeContains(BTNode<K, V> subTreeRoot, K key) {
+		if(subTreeRoot == null) {
+			return false;
+		}else if(subTreeRoot.key.equals(key)) {
+			return true;
+		}else {
+			//checking left and right child for key
+			boolean findLeft = subtreeContains(subTreeRoot.left,key);
+			boolean findRight = subtreeContains(subTreeRoot.right,key);
+			if(findLeft == true) {
+				return true;
+			} else if(findRight == true) {
+				return true;
+			}
+		
+			return false;
+			
+		}
+		
+		
+	}
+	
 
 	/**
 	 * {@inheritDoc}
@@ -195,8 +228,42 @@ public class CS232LinkedBinaryTree<K, V> implements CS232BinaryTree<K, V> {
 	 *            the value.
 	 */
 	public void add(K key, V value) {
-		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		BTNode<K,V> addNode = new BTNode<>(key,value);
+
+		if(root == null) {//if there is no root the tree is empty and this new node becomes the root
+			root=addNode;
+			size ++;
+		}else {
+			Queue<BTNode<K, V>> addQ = new LinkedList<BTNode<K, V>>();
+			addQ.add(root); // start at the root.
+
+			while(addQ.isEmpty()!= true){
+				BTNode<K, V> cur = addQ.remove();
+				if(cur.left == null) {//if there is no left child add the node
+					cur.left =addNode;
+					addNode.parent =cur;
+					size ++;
+					break;
+
+				}else {//if there is a left child keep traversing from that left child 
+					addQ.add(cur.left);
+
+				}
+				if(cur.right == null) {//if there is no right child add the new node
+					cur.right = addNode;
+					addNode.parent = cur;
+					size ++;
+					break;
+
+				}else {//if there is a right child add to the queue and keep traversing
+					addQ.add(cur.right);
+				}
+
+
+			}
+		}
+		
+		
 		
 		/*
 		 * HINT: Use a queue to perform a level order traversal of the tree until a
@@ -296,8 +363,15 @@ public class CS232LinkedBinaryTree<K, V> implements CS232BinaryTree<K, V> {
 	 * {@inheritDoc}
 	 */
 	public void visitInOrder(CS232Visitor<K, V> visitor) {
-		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		subTreeVisitInOrder(root,visitor);
+	}
+	private void subTreeVisitInOrder(BTNode<K,V> subtreeRoot,CS232Visitor<K, V> visitor) {
+		if (subtreeRoot !=null) {
+			subTreeVisitInOrder(subtreeRoot.left, visitor);
+			visitor.visit(subtreeRoot.key, subtreeRoot.value);
+			subTreeVisitInOrder(subtreeRoot.right, visitor);
+			
+		}
 	}
 
 	/**
@@ -354,8 +428,17 @@ public class CS232LinkedBinaryTree<K, V> implements CS232BinaryTree<K, V> {
 	 * @return
 	 */
 	public int countLeafNodes() {
-		// Intentionally not implemented - see homework assignment.
-		throw new UnsupportedOperationException("Not yet implemented");
+		return countLeafHelp(root);
+	}
+	//recursive helper function
+	private int countLeafHelp(BTNode<K,V> node) {
+		if (node == null) {//base case 1 if the given node is null
+			return 0;
+		}
+		if(node.isLeaf()==true) {//base case 2 if the given node is already a leaf add one,
+			return 1;
+		}
+		return countLeafHelp(node.left) + countLeafHelp(node.right); //should keep adding until bottom of tree going to the right and left sides 
 	}
 
 	/*
